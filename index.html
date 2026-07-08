@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AmaiCraft - From The Fog</title>
+    <style>
+        @font-face {
+            font-family: 'Minecraftia';
+            src: local('Minecraftia'), url('Minecraftia.woff') format('woff');
+        }
+        
+        html {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        html::-webkit-scrollbar {
+            display: none;
+        }
+
+        :root {
+            --mc-panel: #222222;
+            --mc-panel-light: #3c3c3c;
+            --mc-panel-dark: #121212;
+            --text-red: #ff5555;
+            --text-gray: #aaaaaa;
+            --text-gold: #ffaa00;
+        }
+
+        body {
+            font-family: 'Minecraftia', 'Courier New', monospace;
+            background-color: #0b0b0b;
+            background-image: url('a.png');
+            background-repeat: no-repeat; /* <--- AJOUTE CETTE LIGNE */
+            background-position: top center;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .wiki-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: var(--mc-panel);
+            border: 4px solid #000000;
+            box-shadow: inset 4px 4px 0px var(--mc-panel-light), 
+                        inset -4px -4px 0px var(--mc-panel-dark);
+            padding: 30px;
+        }
+
+        .wiki-title {
+            color: var(--text-red);
+            font-size: 24px;
+            text-shadow: 2px 2px 0px #3f0000;
+            border-bottom: 4px solid #000000;
+            padding-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .wiki-subtitle {
+            color: var(--text-gray);
+            font-size: 11px;
+            margin-bottom: 35px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        /* --- BLOCS STRUCTURES (SAISONS) --- */
+        .mc-dropdown {
+            background: #181818;
+            border: 4px solid #000000;
+            box-shadow: inset 2px 2px 0px #252525;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* Conteneur de la liste d'épisodes */
+        .episode-list {
+            background: #141414;
+            margin-top: 15px;
+            padding: 5px 15px;
+            border: 2px solid #000;
+        }
+
+        /* Style pour imbriquer les menus d'épisodes en ligne */
+        .episode-list .mc-dropdown {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 10px 0;
+            margin-bottom: 0;
+            border-bottom: 1px dashed #333;
+        }
+
+        .episode-list .mc-dropdown:last-child {
+            border-bottom: none;
+        }
+
+        .mc-dropdown summary {
+            list-style: none;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .mc-dropdown summary::-webkit-details-marker {
+            display: none; 
+        }
+
+        .dropdown-title {
+            font-size: 15px;
+            text-shadow: 1px 1px 0px #000;
+            display: inline-block;
+        }
+
+        /* Couleur des titres d'épisodes */
+        .episode-title {
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        .mc-dropdown summary:hover .dropdown-title {
+            color: #ffdf55; 
+        }
+        .mc-dropdown summary:hover .episode-title {
+            color: #ffffff;
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        .dropdown-arrow {
+            display: inline-block;
+            font-size: 11px;
+            margin-right: 10px;
+            transition: transform 0.15s ease-in-out;
+            color: var(--text-gray);
+        }
+
+        .mc-dropdown[open] > summary > .dropdown-title > .dropdown-arrow,
+        .mc-dropdown[open] > summary > .episode-title > .dropdown-arrow {
+            transform: rotate(90deg);
+            color: var(--text-gold);
+        }
+
+        /* --- CHECKBOX VISIONNÉ --- */
+        .check-btn {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--text-gray);
+            background-color: #000;
+            margin-right: 12px;
+            text-align: center;
+            line-height: 18px;
+            font-size: 14px;
+            color: transparent;
+            cursor: pointer;
+            box-shadow: inset 2px 2px 0px #222;
+        }
+
+        .check-btn:hover {
+            border-color: #ffffff;
+        }
+
+        .check-btn.watched {
+            border-color: #55ff55;
+            color: #55ff55;
+            text-shadow: 1px 1px 0px #003f00;
+        }
+
+        .check-btn.watched::after {
+            content: '✔';
+        }
+
+        /* --- ZONE YOUTUBE EMBED --- */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* Ratio 16:9 */
+            height: 0;
+            overflow: hidden;
+            border: 2px solid #373737;
+            margin-top: 15px;
+            background: #000000; /* Fond noir uni pendant le chargement */
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 11px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wiki-container">
+        
+        <h1 class="wiki-title">AmaiCraft : From The Fog</h1>
+        <p class="wiki-subtitle"></p>
+
+        <details class="mc-dropdown">
+            <summary>
+                <span class="dropdown-title"><span class="dropdown-arrow">▶</span>Saison 1</span>
+            </summary>
+
+            <div class="episode-list">
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e1"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 1</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/WmvE2lDRfZA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e2"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 2</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/TphDbh_VMjM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e3"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 3</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/QJgIhSrpSX4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e4"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 4</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/lbGFDIfM0pE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e5"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 5</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/_K8Tpj7mMkg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e6"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 6</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/pCD0avRijKI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e7"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 7</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/6w8BA0tys-w" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e8"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 8</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/F2yrTO2QWsU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e9"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 9</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/5Q6mAcO6p-w" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e10"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 10</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/JX1khxiF5qQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e11"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 11</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/_s4Ac9W8DLc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e12"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 12</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/1lY-Y-5jZjQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e13"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 13</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/aWzTCgBhzyE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1efinal1"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode Final</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/lmb6mcSv0Bc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1efilm"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Film (Épisodes Réunis)</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/BZCF0PeC7c4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+            </div>
+        </details>
+
+        <details class="mc-dropdown">
+            <summary>
+                <span class="dropdown-title"><span class="dropdown-arrow">▶</span>Saison 2</span>
+            </summary>
+
+            <div class="episode-list">
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s2e1"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 1</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/Tzdf8_iDe84" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s2e2"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 2</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/1zcIMhnPj_Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s2e3"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 3</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/ioNyWFPrOoQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s2e4"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 4</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/frTi2G_PZOM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s2e5"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 5</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/Pijm0KEsqRc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s2e6"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 6</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/jVL6pUQBsRM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s2efilm"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Film (Épisodes Réunis)</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/Sp4sSuHIWpc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                    
+                </details>
+            </div>
+        </details>
+        <details class="mc-dropdown">
+            <summary>
+                <span class="dropdown-title"><span class="dropdown-arrow">▶</span>Saison 3</span>
+            </summary>
+            <div class="episode-list">
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e1"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 1</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/7-JV2wmkDeg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e2"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 2</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/ZPpZomKwXlA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e3"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 3</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/9TIBa6HruZk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e4"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 4</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/n9YyeMel5G0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e5"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 5</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/aJUV2W6RaW0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e6"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 6</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/nKMpCfAZzro" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e7"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 7</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/bp55QSKJqDA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e8"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 8</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/M8z_UDo1tx0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e9"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 9</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/adoM_V33g2Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e10"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 10</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/Ia238JdqoHk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e11"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 11</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/4Rr2p9Jcny8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e12"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 12</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/cbp3ew57iPk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e13"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 13</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/G5E8ZO6FCFI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e13.5"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 13.5</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/QT_GQZKbF3M" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3e14"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 14</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/dfurKllDNk8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s3efilm"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Film (Épisodes Réunis)</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/jqjt3UoGcSg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+            </div>
+        </details>
+                <details class="mc-dropdown">
+            <summary>
+                <span class="dropdown-title"><span class="dropdown-arrow">▶</span>Saison 4</span>
+            </summary>
+            <div class="episode-list">
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s4e1"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 1</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/fSruKrcnUxU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+            </div>
+        </details>
+
+    </div>
+
+    <div class="footer">
+        <p>www.amaicraft.fr</p>
+    </div>
+
+    <script>
+        const episodeColors = [
+            "#55ff55", // Vert
+            "#00ff00", // Vert vif
+            "#66ff99", // Vert menthe
+            "#55ffff", // Cyan
+            "#00ffff", // Turquoise
+            "#00aaff", // Bleu ciel
+            "#5555ff", // Bleu
+            "#8888ff", // Bleu clair
+            "#aaaaff", // Lavande
+            "#aa55ff", // Violet
+            "#cc66ff", // Mauve
+            "#ff55ff", // Magenta
+            "#ff66cc", // Rose
+            "#ff99cc", // Rose clair
+            "#ff5555", // Rouge
+            "#ff7777", // Rouge clair
+            "#ff8844", // Corail
+            "#ffaa00", // Orange
+            "#ffcc00", // Or
+            "#ffff55", // Jaune
+            "#ffffaa", // Jaune pâle
+            "#ffffff", // Blanc
+            "#dddddd", // Gris clair
+            "#aaffaa", // Vert pastel
+            "#aaffff", // Cyan pastel
+            "#ffd700", // Doré
+            "#7fff00", // Chartreuse
+            "#40e0d0", // Turquoise vif
+            "#ff1493", // Rose profond
+            "#1e90ff", // Bleu Dodger
+            "#adff2f", // Jaune-vert
+            "#ff69b4", // Hot Pink
+            "#00fa9a", // Vert printemps
+            "#87cefa", // Bleu azur
+            "#ba55d3", // Orchidée
+            "#ffa07a", // Saumon
+            "#f0e68c", // Kaki clair
+            "#98fb98", // Vert pâle
+            "#87ceeb", // Bleu ciel
+            "#ee82ee"  // Violette
+        ];
+
+        const seasonColors = [
+            "#ff5555",
+            "#55ff55",
+            "#5555ff",
+            "#ffff55",
+            "#ffaa00",
+            "#ff55ff",
+            "#55ffff",
+            "#ffffff",
+            "#ff7777",
+            "#66ff99",
+            "#00aaff",
+            "#8888ff",
+            "#cc66ff",
+            "#ff99cc",
+            "#ffcc00",
+            "#aaffaa",
+            "#aaffff",
+            "#ffd700",
+            "#7fff00",
+            "#40e0d0",
+            "#ff1493",
+            "#1e90ff",
+            "#adff2f",
+            "#ff69b4",
+            "#00fa9a",
+            "#87cefa",
+            "#ba55d3",
+            "#ffa07a",
+            "#f0e68c",
+            "#98fb98",
+            "#87ceeb",
+            "#ee82ee"
+        ];
+
+        document.querySelectorAll(".episode-title").forEach(title => {
+            const color = episodeColors[Math.floor(Math.random() * episodeColors.length)];
+            title.style.color = color;
+        });
+
+        document.querySelectorAll(".episode-title").forEach(title => {
+            const color = episodeColors[Math.floor(Math.random() * episodeColors.length)];
+            title.style.color = color;
+        });
+
+        document.querySelectorAll(".mc-dropdown > summary > .dropdown-title:not(.episode-title)").forEach(title => {
+            const color = seasonColors[Math.floor(Math.random() * seasonColors.length)];
+            title.style.color = color;
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkButtons = document.querySelectorAll('.check-btn');
+
+            checkButtons.forEach(btn => {
+                const episodeId = btn.getAttribute('data-id');
+
+                if (localStorage.getItem('watched_' + episodeId) === 'true') {
+                    btn.classList.add('watched');
+                }
+
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    e.stopPropagation();
+
+                    btn.classList.toggle('watched');
+
+                    if (btn.classList.contains('watched')) {
+                        localStorage.setItem('watched_' + episodeId, 'true');
+                    } else {
+                        localStorage.removeItem('watched_' + episodeId);
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
