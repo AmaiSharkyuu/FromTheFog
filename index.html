@@ -13,7 +13,7 @@
         html {
             scrollbar-width: none;
             -ms-overflow-style: none;
-            zoom: 150%;
+            
         }
         html::-webkit-scrollbar {
             display: none;
@@ -27,12 +27,16 @@
             --text-gray: #aaaaaa;
             --text-gold: #ffaa00;
         }
-
+        body {
+            transform: scale(1.5);
+            transform-origin: top left;
+            width: 66.6667%; /* 100 / 1.5 */
+        }
         body {
             font-family: 'Minecraftia', 'Courier New', monospace;
             background-color: #0b0b0b;
             background-image: url('a.png');
-            background-repeat: no-repeat; /* <--- AJOUTE CETTE LIGNE */
+            background-repeat: no-repeat;
             background-position: top center;
             color: #ffffff;
             margin: 0;
@@ -316,6 +320,16 @@
                     </summary>
                     <div class="video-wrapper">
                         <iframe src="https://www.youtube.com/embed/JX1khxiF5qQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </details>
+
+                <details class="mc-dropdown">
+                    <summary>
+                        <span class="check-btn" data-id="s1e10.5"></span>
+                        <span class="dropdown-title episode-title"><span class="dropdown-arrow">▶</span>Épisode 10.5</span>
+                    </summary>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/iWZU_6oIDjE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
                     </div>
                 </details>
 
